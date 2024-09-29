@@ -7,3 +7,18 @@ public record Project (int Id, string Name, DateTime StartDate, DateTime? EndDat
 public record TimeEntry(Guid Id, int EmployeeId, int ProjectId, DateOnly DateWorked, decimal HoursWorked);
 
 public record ProjectAssignment(int EmployeeId, int ProjectId, string? EmployeeName, string? ProjectName);
+
+public record Resource(string name, string url);
+
+public record LinkedResource<T> {
+
+        public LinkedResource(T resource)
+        {
+            Data = resource;
+            Links = new List<Resource>();
+        }
+        public T Data {get; set;}
+
+        public List<Resources.Resource> Links {get;set;}
+
+}

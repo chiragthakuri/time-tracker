@@ -54,8 +54,7 @@ namespace TimeTracking.Conrollers
         [ProducesResponseType<Resources.Employee>(StatusCodes.Status201Created)]
         [ProducesResponseType<ObjectResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<ObjectResult>(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Post([FromBody] Resources.Employee value)
-        {
+        public async Task<IActionResult> Post([FromBody] Resources.Employee value){
             if(!ModelState.IsValid)
                 {
                     return Problem("Invalid employee request", statusCode: StatusCodes.Status400BadRequest);
@@ -107,7 +106,7 @@ namespace TimeTracking.Conrollers
                 if(dbEmployee==null){
                     return NotFound();
                 } else {
-                return Problem("Problem persisting employee resource", statusCode: StatusCodes.Status500InternalServerError);
+                    return Problem("Problem persisting employee resource", statusCode: StatusCodes.Status500InternalServerError);
                 }
             }  catch(Exception ex) {
                     return Problem("Problem persisting employee resource", statusCode: StatusCodes.Status500InternalServerError);
