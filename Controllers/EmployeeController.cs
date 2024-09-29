@@ -18,12 +18,23 @@ namespace TimeTracking.Conrollers
         {
             ctx= context;
         }
+
         // GET: api/<EmployeeController>
         [HttpGet]
         [ProducesResponseType<IEnumerable<Resources.Employee>>(StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
-            var response = await ctx.Employees.ProjectToType<Employee>().ToListAsync();
+            var response = await ctx.Employees.ProjectToType<Resources.Employee>().ToListAsync();
+
+            var lEmployees = new List<Resources.LinkedResource<Resources.Employee>>();
+
+            foreach(var e in response)
+            {
+                var lEmployee = new Resources.LinkedResource<Resources.Employee>(e);
+                lEmployee.Links.Add(new Resources.Resource("Projects",$"/api/Employee/{e.Id}/Projects"));
+                lEmployees.Add(lEmployee);
+            }
+
             return Ok(response);
         }
 
@@ -46,7 +57,42 @@ namespace TimeTracking.Conrollers
 
             var response = dbEmployee.Adapt<Resources.Employee>();
 
-            return Ok(response);
+            var lEmployee = new Resources.LinkedResource<Resources.Employee>(response);
+
+            lEmployee.Links.Add(new Resources.Resource("Projects",$"/api/Employee/{response.Id}/Projects"));
+
+            return Ok(lEmployee);
+        }
+
+        // GET api/<EmployeeController>/5/Projects
+        [HttpGet("{id}/Projects")]
+        [ProducesResponseType<IEnumerable<Resources.Project>>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetProjects(int id)
+        {
+            if(!ModelState.IsValid)
+            {
+                return Problem("Invalid employee request", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var dbEmployee = await ctx.Employees.FindAsync(id);
+
+              if (dbEmployee == null)
+                {
+                    return NotFound(); // Return 404 if employee not found
+                }
+
+            await ctx.Entry(dbEmployee).Collection(e=>e.Projects).LoadAsync();
+
+            var projects = new List<Resources.Project>();
+
+            foreach(var p in dbEmployee.Projects)
+            {
+                var rProject = p.Adapt<Resources.Project>();
+                projects.Add(rProject);
+
+            }    
+            return Ok(projects);
         }
 
         // POST api/<EmployeeController>
